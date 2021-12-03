@@ -16,7 +16,7 @@ class CreateFlagsTable extends Migration
         Schema::create('flags', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
-            $table->string('img');
+            $table->string('img')->nullable();
         });
     }
 

@@ -6,7 +6,6 @@ use App\Http\Controllers\FuelTypes\FuelTypesController;
 use App\Http\Controllers\GasStationPriceDetails\GasStationPriceDetailsController;
 use App\Http\Controllers\GasStationPrices\GasStationPricesController;
 use App\Http\Controllers\GasStations\GasStationsController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('api')->prefix('auth')->group(function () {
@@ -16,7 +15,15 @@ Route::middleware('api')->prefix('auth')->group(function () {
     Route::get('me', [AuthController::class, 'me'])->name('auth.me');
 });
 
-Route::resource('flags', FlagsController::class);
+Route::group(['prefix' => 'flags'], function($router) {
+    Route::get('/', [FlagsController::class, 'index']);
+    Route::get('/{id}', [FlagsController::class, 'show']);
+    Route::post('/create', [FlagsController::class, 'create']);
+    Route::put('/{id}', [FlagsController::class, 'update']);
+});
+
+// Route::resource('flags', FlagsController::class);
+
 Route::resource('fuel-types', FuelTypesController::class);
 Route::resource('gas-stations', GasStationsController::class);
 Route::resource('gas-station-prices', GasStationPricesController::class);
