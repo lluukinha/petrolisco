@@ -2,9 +2,19 @@
 
 namespace App\Http\Controllers\FuelTypes;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+
 use App\Models\FuelType;
+
+use App\Http\Requests\FuelType\CreateFuelTypeRequest;
+use App\Http\Requests\FuelType\UpdateFuelTypeRequest;
+
+use App\Http\Resources\FuelTypeResource;
+
+use App\Exceptions\ApiExceptions\Http404;
+use App\Exceptions\ApiExceptions\Http422;
+use App\Exceptions\FuelType\FuelTypeAlreadyExistsException;
+use App\Exceptions\FuelType\FuelTypeNotFoundException;
 
 class FuelTypesController extends Controller
 {
@@ -15,28 +25,37 @@ class FuelTypesController extends Controller
      */
     public function index()
     {
-        return FuelType::all();
+        $flags = FuelType::all();
+        return FuelTypeResource::collection($flags);
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Store a newly created resource in database.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function create(CreateFuelTypeRequest $request)
     {
-        //
+        try {
+            $attributes = $request->validated();
+
+            $fuelTypeName = $attributes['name'];
+
+            $alreadyExists = FuelType::where('name', '=', $fuelTypeName)->exists();
+            if ($alreadyExists) {
+                throw new FuelTypeAlreadyExistsException();
+            }
+
+            $fuelType = new FuelType();
+            $fuelType->name = $fuelTypeName;
+            $fuelType->save();
+
+            return new FuelTypeResource($fuelType);
+
+        } catch (FuelTypeAlreadyExistsException $e) {
+            throw Http422::makeForField('name', 'name-already-exists');
+        }
     }
 
     /**
@@ -47,18 +66,17 @@ class FuelTypesController extends Controller
      */
     public function show($id)
     {
-        //
-    }
+        try {
+            $fuelType = FuelType::find($id);
+            if (!$fuelType) {
+                throw new FuelTypeNotFoundException();
+            }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
+            return new FuelTypeResource($fuelType);
+
+        } catch (FuelTypeNotFoundException $e) {
+            throw Http404::makeForField('flag', 'flag-not-found');
+        }
     }
 
     /**
@@ -68,9 +86,38 @@ class FuelTypesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateFuelTypeRequest $request, $id)
     {
-        //
+        try {
+            $fuelType = FuelType::find($id);
+            if (!$fuelType) {
+                throw new FuelTypeNotFoundException();
+            }
+
+            $attributes = $request->validated();
+
+            if ($this->hasAttribute('name', $attributes)) {
+                $newName = $attributes['name'];
+                $existingFuelType = FuelType::where('name', '=', $newName)
+                    ->where('id', '<>', $id)
+                    ->exists();
+
+                if ($existingFuelType) {
+                    throw new FuelTypeAlreadyExistsException();
+                }
+
+                $fuelType->name = $attributes['name'];
+            }
+
+            $fuelType->save();
+
+            return new FuelTypeResource($fuelType);
+
+        } catch (FuelTypeNotFoundException $e) {
+            throw Http404::makeForField('fuel-type', 'flag-not-found');
+        } catch (FuelTypeAlreadyExistsException $e) {
+            throw Http422::makeForField('name', 'name-already-exists');
+        }
     }
 
     /**
@@ -82,5 +129,9 @@ class FuelTypesController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    private function hasAttribute(string $key, array $attributes) {
+        return array_key_exists($key, $attributes) && $attributes[$key] != null;
     }
 }

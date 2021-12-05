@@ -22,9 +22,13 @@ Route::group(['prefix' => 'flags'], function($router) {
     Route::put('/{id}', [FlagsController::class, 'update']);
 });
 
-// Route::resource('flags', FlagsController::class);
+Route::group(['prefix' => 'fuel-types'], function($router) {
+    Route::get('/', [FuelTypesController::class, 'index']);
+    Route::get('/{id}', [FuelTypesController::class, 'show']);
+    Route::post('/create', [FuelTypesController::class, 'create']);
+    Route::put('/{id}', [FuelTypesController::class, 'update']);
+});
 
-Route::resource('fuel-types', FuelTypesController::class);
 Route::resource('gas-stations', GasStationsController::class);
 Route::resource('gas-station-prices', GasStationPricesController::class);
 Route::resource('gas-station-price-details', GasStationPriceDetailsController::class);

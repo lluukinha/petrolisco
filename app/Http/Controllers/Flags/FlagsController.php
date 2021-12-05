@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Flags;
 
+use App\Http\Controllers\Controller;
+
+use App\Models\Flag;
+
+use App\Http\Requests\Flag\CreateFlagRequest;
+use App\Http\Requests\Flag\UpdateFlagRequest;
+
+use App\Http\Resources\FlagResource;
+
 use App\Exceptions\ApiExceptions\Http404;
 use App\Exceptions\ApiExceptions\Http422;
 use App\Exceptions\Flag\FlagAlreadyExistsException;
 use App\Exceptions\Flag\FlagNotFoundException;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Flag\CreateFlagRequest;
-use App\Http\Requests\Flag\UpdateFlagRequest;
-use App\Http\Resources\FlagResource;
-use App\Models\Flag;
 
 class FlagsController extends Controller
 {
