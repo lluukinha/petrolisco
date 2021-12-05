@@ -14,7 +14,7 @@ class GasStation extends Model
     }
 
     public function flag() {
-        return $this->hasOne(Flag::class);
+        return $this->belongsTo(Flag::class);
     }
 
     public function prices() {

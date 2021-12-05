@@ -24,8 +24,7 @@ class CreateFuelTypeRequest extends JSONRequest
     public function rules()
     {
         return [
-            'name' => 'required|string',
-            'img' => 'nullable|string'
+            'name' => 'required|string'
         ];
     }
 
@@ -38,8 +37,7 @@ class CreateFuelTypeRequest extends JSONRequest
     {
         return [
             'name.required' => 'name-required',
-            'name.string' => 'name-must-be-string',
-            'img.string' => 'img-must-be-string',
+            'name.string' => 'name-must-be-string'
         ];
     }
 }

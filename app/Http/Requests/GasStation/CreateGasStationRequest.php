@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Flag;
+namespace App\Http\Requests\GasStation;
 
 use App\Http\Requests\JSONRequest;
 
-class CreateFlagRequest extends JSONRequest
+class CreateGasStationRequest extends JSONRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,7 +25,8 @@ class CreateFlagRequest extends JSONRequest
     {
         return [
             'name' => 'required|string',
-            'img' => 'nullable|string'
+            'address' => 'required|string',
+            'flag_id' => 'required|string',
         ];
     }
 
@@ -39,7 +40,10 @@ class CreateFlagRequest extends JSONRequest
         return [
             'name.required' => 'name-required',
             'name.string' => 'name-must-be-string',
-            'img.string' => 'img-must-be-string'
+            'address.required' => 'address-required',
+            'address.string' => 'address-must-be-string',
+            'flag_id.required' => 'flag_id-required',
+            'flag_id.string' => 'flag_id-must-be-string',
         ];
     }
 }

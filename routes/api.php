@@ -29,7 +29,14 @@ Route::group(['prefix' => 'fuel-types'], function($router) {
     Route::put('/{id}', [FuelTypesController::class, 'update']);
 });
 
-Route::resource('gas-stations', GasStationsController::class);
+Route::group(['prefix' => 'gas-stations'], function($router) {
+    Route::get('/', [GasStationsController::class, 'index']);
+    Route::get('/{id}', [GasStationsController::class, 'show']);
+    Route::post('/create', [GasStationsController::class, 'create']);
+    Route::put('/{id}', [GasStationsController::class, 'update']);
+});
+
+/* Route::resource('gas-stations', GasStationsController::class); */
 Route::resource('gas-station-prices', GasStationPricesController::class);
 Route::resource('gas-station-price-details', GasStationPriceDetailsController::class);
 
