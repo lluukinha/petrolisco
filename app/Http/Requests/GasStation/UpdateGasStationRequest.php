@@ -14,6 +14,8 @@ class UpdateGasStationRequest extends CreateGasStationRequest {
             'name' => 'nullable|string',
             'address' => 'nullable|string',
             'flag_id' => 'nullable|string',
+            'fuel_type_ids' => 'nullable|array',
+            'fuel_type_ids.*' => 'required|int',
         ];
     }
 }

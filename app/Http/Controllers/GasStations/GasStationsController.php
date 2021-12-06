@@ -14,9 +14,12 @@ use App\Http\Resources\GasStationResource;
 use App\Exceptions\ApiExceptions\Http404;
 use App\Exceptions\ApiExceptions\Http422;
 use App\Exceptions\Flag\FlagNotFoundException;
+use App\Exceptions\FuelType\FuelTypeNotFoundException;
 use App\Exceptions\GasStation\GasStationAlreadyExistsException;
 use App\Exceptions\GasStation\GasStationNotFoundException;
+use App\Http\Requests\GasStation\AssignFuelTypesToGasStationRequest;
 use App\Models\Flag;
+use App\Models\FuelType;
 
 class GasStationsController extends Controller
 {
@@ -61,12 +64,26 @@ class GasStationsController extends Controller
             $gasStation->flag_id = $flag->id;
             $gasStation->save();
 
+            if ($this->hasAttribute('fuel_type_ids', $attributes)) {
+                $typeIds = $attributes["fuel_type_ids"];
+                $qtdTypes = count($typeIds);
+                $typeModels = FuelType::whereIn('id', $typeIds)->count();
+
+                if ($qtdTypes !== $typeModels) {
+                    throw new FuelTypeNotFoundException();
+                }
+
+                $gasStation->fuelTypes()->sync($typeIds, true);
+            }
+
             return new GasStationResource($gasStation);
 
         } catch (GasStationAlreadyExistsException $e) {
             throw Http422::makeForField('name', 'name-already-exists');
         } catch (FlagNotFoundException $e) {
             throw Http404::makeForField('flag', 'flag-not-found');
+        } catch (FuelTypeNotFoundException $e) {
+            throw Http404::makeForField('fuel-type', 'one-or-more-not-found');
         }
     }
 
@@ -88,6 +105,34 @@ class GasStationsController extends Controller
 
         } catch (GasStationNotFoundException $e) {
             throw Http404::makeForField('gas-station', 'gas-station-not-found');
+        }
+    }
+
+    public function assignFuelTypes(AssignFuelTypesToGasStationRequest $request, $id)
+    {
+        try {
+            $gasStation = GasStation::find($id);
+            if (!$gasStation) {
+                throw new GasStationNotFoundException();
+            }
+
+            $attributes = $request->validated();
+            $typeIds = $attributes["fuel_type_ids"];
+            $qtdTypes = count($typeIds);
+            $typeModels = FuelType::whereIn('id', $typeIds)->count();
+
+            if ($qtdTypes !== $typeModels) {
+                throw new FuelTypeNotFoundException();
+            }
+
+            $gasStation->fuelTypes()->sync($typeIds, true);
+
+            return new GasStationResource($gasStation);
+
+        } catch (GasStationNotFoundException $e) {
+            throw Http404::makeForField('gas-station', 'gas-station-not-found');
+        } catch (FuelTypeNotFoundException $e) {
+            throw Http404::makeForField('fuel-type', 'one-or-more-not-found');
         }
     }
 
@@ -136,6 +181,18 @@ class GasStationsController extends Controller
                 $gasStation->flag()->associate($flag);
             }
 
+            if ($this->hasAttribute('fuel_type_ids', $attributes)) {
+                $typeIds = $attributes["fuel_type_ids"];
+                $qtdTypes = count($typeIds);
+                $typeModels = FuelType::whereIn('id', $typeIds)->count();
+
+                if ($qtdTypes !== $typeModels) {
+                    throw new FuelTypeNotFoundException();
+                }
+
+                $gasStation->fuelTypes()->sync($typeIds, true);
+            }
+
             $gasStation->save();
 
             return new GasStationResource($gasStation);
@@ -146,6 +203,8 @@ class GasStationsController extends Controller
             throw Http404::makeForField('flag', 'flag-not-found');
         } catch (GasStationAlreadyExistsException $e) {
             throw Http422::makeForField('name', 'name-already-exists');
+        } catch (FuelTypeNotFoundException $e) {
+            throw Http404::makeForField('fuel-type', 'one-or-more-not-found');
         }
     }
 

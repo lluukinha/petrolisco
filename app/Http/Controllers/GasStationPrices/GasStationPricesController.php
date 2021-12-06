@@ -2,41 +2,67 @@
 
 namespace App\Http\Controllers\GasStationPrices;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+
+use App\Http\Requests\GasStationPrice\CreateGasStationPriceRequest;
+
+use App\Http\Resources\GasStationPriceResource;
+
+use App\Models\FuelType;
+use App\Models\GasStation;
 use App\Models\GasStationPrice;
+use App\Models\GasStationPriceDetail;
+
+use App\Exceptions\ApiExceptions\Http404;
+use App\Exceptions\FuelType\FuelTypeNotFoundException;
+use App\Exceptions\GasStation\GasStationNotFoundException;
 
 class GasStationPricesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        return GasStationPrice::all();
-    }
-
     /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(CreateGasStationPriceRequest $request, $id)
     {
-        //
-    }
+        try {
+            $gasStation = GasStation::find($id);
+            if (!$gasStation) {
+                throw new GasStationNotFoundException();
+            }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
+            $attributes = $request->validated();
+            $typeIds = array_map(function($item) {
+                return $item['fuel_type_id'];
+            }, $attributes['prices']);
+            $qtdTypes = count($typeIds);
+            $typeModels = FuelType::whereIn('id', $typeIds)->count();
+
+            if ($qtdTypes !== $typeModels) {
+                throw new FuelTypeNotFoundException();
+            }
+
+            $price = new GasStationPrice();
+            $price->gas_station_id = $gasStation->id;
+            $price->user_id = 1;
+            $price->save();
+
+            foreach ($attributes['prices'] as $detail) {
+                $priceDetail = new GasStationPriceDetail();
+                $priceDetail->gas_station_price_id = $price->id;
+                $priceDetail->fuel_type_id = $detail['fuel_type_id'];
+                $priceDetail->price = $detail['price'];
+                $priceDetail->save();
+            }
+
+            return new GasStationPriceResource($price);
+
+        } catch (GasStationNotFoundException $e) {
+            throw Http404::makeForField('gas-station', 'gas-station-not-found');
+        } catch (FuelTypeNotFoundException $e) {
+            throw Http404::makeForField('fuel-type', 'one-or-more-not-found');
+        }
     }
 
     /**
@@ -47,30 +73,8 @@ class GasStationPricesController extends Controller
      */
     public function show($id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
+        $gasStationPrice = GasStationPrice::where('gas_station_id', '=', $id)->get();
+        return GasStationPriceResource::collection($gasStationPrice);
     }
 
     /**

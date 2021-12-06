@@ -34,11 +34,16 @@ Route::group(['prefix' => 'gas-stations'], function($router) {
     Route::get('/{id}', [GasStationsController::class, 'show']);
     Route::post('/create', [GasStationsController::class, 'create']);
     Route::put('/{id}', [GasStationsController::class, 'update']);
+    Route::post('/{id}/assign-fuel-types', [GasStationsController::class, 'assignFuelTypes']);
 });
 
-/* Route::resource('gas-stations', GasStationsController::class); */
-Route::resource('gas-station-prices', GasStationPricesController::class);
-Route::resource('gas-station-price-details', GasStationPriceDetailsController::class);
+Route::group(['prefix' => 'gas-station-prices'], function($router) {
+    Route::get('/{id}', [GasStationPricesController::class, 'show']);
+    Route::post('/{id}/create', [GasStationPricesController::class, 'create']);
+});
+
+// Route::resource('gas-station-prices', GasStationPricesController::class);
+// Route::resource('gas-station-price-details', GasStationPriceDetailsController::class);
 
 Route::get('/', function() {
     return ['text' => 'get endpoint'];

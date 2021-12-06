@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class GasStationPriceDetail extends Model
 {
+    public $timestamps = false;
     protected $table = 'gas_station_price_detail';
     use HasFactory;
 
@@ -14,7 +15,7 @@ class GasStationPriceDetail extends Model
         return $this->belongsTo(FuelType::class);
     }
 
-    public function price() {
+    public function priceDetail() {
         return $this->belongsTo(GasStationPrice::class);
     }
 }

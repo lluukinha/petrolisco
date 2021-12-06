@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class GasStationResource extends JsonResource
+class GasStationPriceResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,13 +15,12 @@ class GasStationResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'type' => 'gas-station',
+            'type' => 'gas-station-price',
             'id' => (string) $this->id,
-            'name' => $this->name,
-            'address' => $this->address,
-            'flag_id' => $this->flag->id,
-            'flag' => $this->flag->name,
-            'fuel_types' => FuelTypeResource::collection($this->fuelTypes)
+            'date' => $this->created_at,
+            'gas_station_id' => $this->gasStation->id,
+            'gas_station' => $this->gasStation->name,
+            'details' => GasStationPriceDetailResource::collection($this->details)
         ];
     }
 }
