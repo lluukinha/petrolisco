@@ -21,7 +21,8 @@ class GasStationResource extends JsonResource
             'address' => $this->address,
             'flag_id' => $this->flag->id,
             'flag' => $this->flag->name,
-            'fuel_types' => FuelTypeResource::collection($this->fuelTypes)
+            'fuel_types' => FuelTypeResource::collection($this->fuelTypes),
+            'last_price' => new GasStationPriceResource($this->prices()->latest()->first())
         ];
     }
 }

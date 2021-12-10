@@ -16,7 +16,7 @@ class GasStationPriceDetailResource extends JsonResource
     {
         return [
             'name' => $this->fuelType->name,
-            'price' => $this->price
+            'price' => (double) $this->price
         ];
     }
 }
